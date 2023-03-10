@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "972315532834",
+    "project_id": "visilantcamera",
+    "storage_bucket": "visilantcamera.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:972315532834:android:a9695acb541763d79b347b",
+        "android_client_info": {
+          "package_name": "com.example.visilantcamera"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "972315532834-0j46rddbhkpbb5u1fi0uicjpcir9nv99.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyj3n80XWGuGOlo2oMMniyrpybF4DemlM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "972315532834-0j46rddbhkpbb5u1fi0uicjpcir9nv99.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

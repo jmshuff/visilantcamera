@@ -1,0 +1,3 @@
+include ':com.example.visilantcamera.app'
+include ':app'
+rootProject.name = "visilantcamera"
