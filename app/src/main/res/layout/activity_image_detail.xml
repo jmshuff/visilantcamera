@@ -7,10 +7,18 @@
     tools:context="com.example.visilantcamera.activities.ImageDetailActivity">
 
     <!--image view to display our image-->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageName"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:text="image name"/>
+
     <ImageView
         android:id="@+id/idIVImage"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="wrap_content"
         android:layout_centerInParent="true" />
 
 </RelativeLayout>

@@ -2,11 +2,14 @@ package com.example.visilantcamera.activities;
 
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -17,6 +20,8 @@ import com.example.visilantcamera.R;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
@@ -77,7 +82,7 @@ public class GalleryActivity extends AppCompatActivity {
         // in this method we are preparing our recycler view.
         // on below line we are initializing our adapter class.
         imageRVAdapter = new RecyclerViewAdapter(GalleryActivity.this, imagePaths);
-
+        Log.d("createImageRVAdapter", "created");
         // on below line we are creating a new grid layout manager.
         GridLayoutManager manager = new GridLayoutManager(GalleryActivity.this, 4);
 
@@ -87,6 +92,7 @@ public class GalleryActivity extends AppCompatActivity {
         imagesRV.setAdapter(imageRVAdapter);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void getImagePath() {
         // in this method we are adding all our image paths
         // in our arraylist which we have created.
@@ -100,7 +106,16 @@ public class GalleryActivity extends AppCompatActivity {
         boolean isSDPresent = direct.exists();
 
         if (isSDPresent) {
+            File imageList[] = direct.listFiles();
+            Arrays.sort(imageList, Comparator.comparingLong(File::lastModified).reversed());
+            for (File file : imageList) {
 
+                imagePaths.add(file.getAbsolutePath());
+            }
+            Log.d("imagePaths", String.valueOf(imagePaths.size()));
+            //imageRVAdapter.notifyDataSetChanged();
+
+/*
             // if the sd card is present we are creating a new list in
             // which we are getting our images data with their ids.
             final String[] columns = {MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID};
@@ -111,7 +126,7 @@ public class GalleryActivity extends AppCompatActivity {
 
             // this method will stores all the images
             // from the gallery in Cursor
-            Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null, null, orderBy);
+            Cursor cursor = getContentResolver().query(MediaStore.Images.Media.direct, columns, null, null, orderBy);
 
             // below line is to get total number of images
             int count = cursor.getCount();
@@ -133,10 +148,11 @@ public class GalleryActivity extends AppCompatActivity {
             imageRVAdapter.notifyDataSetChanged();
             // after adding the data to our
             // array list we are closing our cursor.
-            cursor.close();
+            cursor.close();*/
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         // this method is called after permissions has been granted.
