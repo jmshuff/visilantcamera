@@ -1,33 +1,58 @@
-package com.example.visilantcamera.activities;
-
+package com.example.visilantcamera.activities.cameraActivity;
+import android.graphics.Bitmap;
 import android.util.Log;
-
-import org.opencv.calib3d.Calib3d;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.DMatch;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfDMatch;
-import org.opencv.core.MatOfKeyPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.Size;
-import org.opencv.core.TermCriteria;
-import org.opencv.features2d.DescriptorMatcher;
-import org.opencv.features2d.Features2d;
-import org.opencv.features2d.ORB;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.checkerframework.checker.units.qual.A;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.DMatch;
+import org.opencv.core.KeyPoint;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfDMatch;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfKeyPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.core.TermCriteria;
+import org.opencv.features2d.BFMatcher;
+import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.FastFeatureDetector;
+import org.opencv.features2d.Features2d;
+import org.opencv.features2d.ORB;
+import org.opencv.features2d.SIFT;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.AlignMTB;
+
+import static org.opencv.core.Core.NORM_HAMMING;
+import static org.opencv.core.Core.addWeighted;
 import static org.opencv.core.CvType.CV_32F;
+import static org.opencv.core.Mat.eye;
+import static org.opencv.core.TermCriteria.EPS;
 import static org.opencv.imgcodecs.Imgcodecs.imread;
+import static org.opencv.imgproc.Imgproc.INTER_LINEAR;
+import static org.opencv.imgproc.Imgproc.WARP_INVERSE_MAP;
 import static org.opencv.imgproc.Imgproc.cvtColor;
+import static org.opencv.imgproc.Imgproc.resize;
+import static org.opencv.imgproc.Imgproc.warpAffine;
+import static org.opencv.imgproc.Imgproc.warpPerspective;
+import static org.opencv.photo.Photo.createAlignMTB;
+import static org.opencv.video.Video.MOTION_AFFINE;
+import static org.opencv.video.Video.MOTION_EUCLIDEAN;
 import static org.opencv.video.Video.MOTION_HOMOGRAPHY;
 import static org.opencv.video.Video.findTransformECC;
 
@@ -181,20 +206,24 @@ public class FocusStacking {
 //                Utils.matToBitmap(matBaligned, alignedBMP);
             //Log.d("matBAligned", matBaligned.dump());
             inputs.set(i, matBaligned);
-            String filename= "aligned"+i+".bmp";
+            String filename= "aligned"+i+".jpg";
             Imgcodecs.imwrite(path + filename, matBaligned);
+
         }
 
     }
 
-    public void alignImagesFeatureMatch(ArrayList<Mat> imageList){
-        for(int i = 1; i<imageList.size(); i++) {
+    public void alignImagesFeatureMatch(){
+        for(int i = 1; i<inputs.size(); i++) {
             Log.d("alignImages", "aligning image " + String.valueOf(i));
+            Log.d("input size 1", inputs.get(i).height() + " " + inputs.get(i).width());
+            Log.d("input size 0", inputs.get(i-1).height() + " " + inputs.get(i-1).width());
+
             ORB orb_detector = ORB.create(5000);
-            Mat img1 = new Mat(imageList.get(i - 1).height(), imageList.get(i - 1).width(), CvType.CV_8U); //read image 0
-            Mat img2 = new Mat(imageList.get(i).height(), imageList.get(i).width(), CvType.CV_8U); //read image 1
-            Imgproc.cvtColor(imageList.get(i-1), img1, Imgproc.COLOR_BGR2GRAY); //convert image 0 to grayscale
-            Imgproc.cvtColor(imageList.get(i), img2, Imgproc.COLOR_BGR2GRAY); //convert image 1 to grayscale
+            Mat img1 = new Mat(inputs.get(i - 1).height(), inputs.get(i - 1).width(), CvType.CV_8U); //read image 0
+            Mat img2 = new Mat(inputs.get(i).height(), inputs.get(i).width(), CvType.CV_8U); //read image 1
+            Imgproc.cvtColor(inputs.get(i-1), img1, Imgproc.COLOR_BGR2GRAY); //convert image 0 to grayscale
+            Imgproc.cvtColor(inputs.get(i), img2, Imgproc.COLOR_BGR2GRAY); //convert image 1 to grayscale
 
             Mat mask = null;
             MatOfKeyPoint keypoints1 = new MatOfKeyPoint();
@@ -219,7 +248,7 @@ public class FocusStacking {
             Double max_dist = 0.0;
             Double min_dist = 100.0;
 
-            for(int j = 0;j < matchesList.size(); j++){
+            for(int j = 0; j < matchesList.size(); j++){
                 Double dist = (double) matchesList.get(j).distance;
                 if (dist < min_dist)
                     min_dist = dist;
@@ -266,10 +295,10 @@ public class FocusStacking {
                     }
                 }*/
 
-            Mat transformed_img= new Mat(imageList.get(i).height(), imageList.get(i).width(), CvType.CV_8UC3);
-            Imgproc.warpPerspective(imageList.get(i), transformed_img, Homog, imageList.get(i-1).size(), Imgproc.INTER_LINEAR + Imgproc.WARP_INVERSE_MAP);
+            Mat transformed_img= new Mat(inputs.get(i).height(), inputs.get(i).width(), CvType.CV_8UC3);
+            Imgproc.warpPerspective(inputs.get(i), transformed_img, Homog, inputs.get(i).size(), Imgproc.INTER_LINEAR + Imgproc.WARP_INVERSE_MAP);
             inputs.set(i, transformed_img);
-            String filename= "aligned"+i+".bmp";
+            String filename= "aligned"+i+".jpg";
             Imgcodecs.imwrite(path + filename, transformed_img);
 
             Mat outputImg = new Mat();
@@ -279,8 +308,7 @@ public class FocusStacking {
             Features2d.drawMatches(img1, keypoints1, img2, keypoints2, good_matches_mat, outputImg);
 
             // save image
-            Imgcodecs.imwrite(path + "result.jpg", outputImg);
-
+            Imgcodecs.imwrite(path + "featurematch" + i + ".jpg", outputImg);
 
         }
 
@@ -348,7 +376,7 @@ public class FocusStacking {
                 }
             }
             System.out.println("Success !");
-            Imgcodecs.imwrite(path + "merged.bmp", vide);
+            Imgcodecs.imwrite(path + "merged.jpg", vide);
         }
     }
 
@@ -385,13 +413,13 @@ public class FocusStacking {
             {
                 String nom = files[i].getName();
                 inputs.add(imread(path + nom));
+                Log.d("readFile", path +  nom);
                 System.out.println(inputs.get(i).height() + " " + inputs.get(i).width());
             }
 
-            alignImagesFeatureMatch(inputs);
+            alignImagesFeatureMatch();
         }
     }
 
 
 }
-

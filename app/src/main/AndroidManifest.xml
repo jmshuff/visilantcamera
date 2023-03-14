@@ -43,7 +43,7 @@
         android:hasFragileUserData="true">
 
         <activity
-            android:name="com.example.visilantcamera.activities.MainActivity"
+            android:name="com.example.visilantcamera.activities.cameraActivity.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|uiMode"
             android:screenOrientation="portrait"
             android:exported="true"

@@ -1,4 +1,4 @@
-package com.example.visilantcamera.activities;
+package com.example.visilantcamera.activities.cameraActivity;
 
 import android.Manifest;
 import android.app.Activity;
@@ -32,6 +32,8 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.example.visilantcamera.R;
+import com.example.visilantcamera.activities.GalleryActivity;
+import com.example.visilantcamera.activities.cameraActivity.MainActivityPermissionsDispatcher;
 import com.example.visilantcamera.app.AppConstants;
 import com.example.visilantcamera.app.VisilantCameraApplication;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -50,19 +52,18 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
-import android.util.Range;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 
-import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import org.opencv.android.CameraActivity;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -679,18 +680,19 @@ public class MainActivity extends AppCompatActivity {
             List<CaptureRequest> captureRequestList = new ArrayList<>();
 
             int numOfImages = 3;
-            float minimumLens = characteristics.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
-            float maxLens = characteristics.get(CameraCharacteristics.LENS_INFO_HYPERFOCAL_DISTANCE);
+            float minimumLens = characteristics.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE)/2;
+            float maxLens = characteristics.get(CameraCharacteristics.LENS_INFO_HYPERFOCAL_DISTANCE)*2;
             Log.d("minLens", String.valueOf(minimumLens));
             Log.d("maxLens", String.valueOf(maxLens));
 
             for (int i = 0; i < numOfImages; i++) {
                 //captureBuilder.addTarget(reader.getSurface());
-                float increment= (minimumLens-maxLens*2)/(numOfImages-1);
-                Log.d("lens distance", String.valueOf(minimumLens-i*increment));
+                float increment= (minimumLens-maxLens)/(numOfImages-1);
+                Log.d("lens distance", String.valueOf(minimumLens/2-i*increment));
                 captureBuilder.set(CaptureRequest.LENS_FOCUS_DISTANCE, minimumLens-i*increment);
                 captureRequestList.add(captureBuilder.build());
             }
+
 
             CameraCaptureSession.CaptureCallback burstCallback = new CameraCaptureSession.CaptureCallback() {
                 @Override
@@ -725,6 +727,19 @@ public class MainActivity extends AppCompatActivity {
                             .getAbsolutePath() + "/" + DIR_NAME + "/", String.valueOf(System.currentTimeMillis()));
                     stack.fill();
                     stack.focus_stack();
+
+                    //Save images
+/*                    String imageName="";
+                    for(int i =0; i<images.size(); i++){
+                        imageName="alignedImages" + i + ".png";
+                        if (i==images.size()-1)
+                            imageName="merged.png";
+                        Imgcodecs.imwrite(Environment
+                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                                .getAbsolutePath() + "/" + DIR_NAME + "/" + imageName, images.get(i));
+
+                    }*/
+
                 }
 
                 @Override
@@ -740,6 +755,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         session.stopRepeating();
                         session.captureBurst(captureRequestList, burstCallback, mBackgroundHandler);
+                        Log.d("WriteExternalStorage", String.valueOf(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED));
                         createCameraPreview();
                     } catch (CameraAccessException e) {
                         e.printStackTrace();

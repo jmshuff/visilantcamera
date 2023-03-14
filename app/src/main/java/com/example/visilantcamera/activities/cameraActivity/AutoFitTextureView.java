@@ -1,4 +1,4 @@
-package com.example.visilantcamera.activities;
+package com.example.visilantcamera.activities.cameraActivity;
 
 import android.content.Context;
 import android.util.AttributeSet;

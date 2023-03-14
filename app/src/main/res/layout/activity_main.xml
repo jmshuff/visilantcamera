@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
-    tools:context="com.example.visilantcamera.activities.MainActivity">
+    tools:context="com.example.visilantcamera.activities.cameraActivity.MainActivity">
 
     <androidx.camera.view.PreviewView
         android:id="@+id/camera"
@@ -20,7 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.example.visilantcamera.activities.AutoFitTextureView
+    <com.example.visilantcamera.activities.cameraActivity.AutoFitTextureView
         android:id="@+id/view_finder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -3,6 +3,7 @@ package com.example.visilantcamera.activities;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.visilantcamera.R;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
@@ -89,7 +91,13 @@ public class GalleryActivity extends AppCompatActivity {
         // in this method we are adding all our image paths
         // in our arraylist which we have created.
         // on below line we are checking if the device is having an sd card or not.
-        boolean isSDPresent = android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);
+        String DIR_NAME = "AROMA Photos3";
+        File direct =
+                new File(Environment
+                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                        .getAbsolutePath() + "/" + DIR_NAME + "/");
+
+        boolean isSDPresent = direct.exists();
 
         if (isSDPresent) {
 
